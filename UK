@@ -1,0 +1,220 @@
+const axios = require('axios');
+
+exports.main = async (event, callback) => {
+    const qwilrApiKey = process.env.qwilr;
+    const qwilrEndpoint = 'https://api.qwilr.com/v1/pages';
+
+    // Retrieve custom property values from HubSpot
+    const economyPrice = event.inputFields.economyPrice;
+    const businessPrice = event.inputFields.businessPrice;
+    const premiumPrice = event.inputFields.premiumPrice;
+    const originService = event.inputFields.originService;
+    const flights = event.inputFields.flights;
+    const deliveryCity = event.inputFields.deliveryCity;
+    const allPets = event.inputFields.allPets;
+    const toCountry = event.inputFields.toCountry;
+    const airlineQuoted = event.inputFields.airlineQuoted;
+    const kennels = event.inputFields.kennels;
+    const kennelCosts = event.inputFields.kennelCosts;
+    const totalPets = event.inputFields.totalPets;
+    const recordId = event.inputFields.recordId;
+    const petImage = event.inputFields.petImage;
+
+    console.log("economyPrice:", economyPrice);
+    console.log("businessPrice:", businessPrice);
+    console.log("premiumPrice:", premiumPrice);
+    console.log("originService:", originService);
+    console.log("flights:", flights);
+    console.log("deliveryCity:", deliveryCity);
+    console.log("allPets:", allPets);
+    console.log("toCountry:", toCountry);
+    console.log("airlineQuoted:", airlineQuoted);
+    console.log("kennels:", kennels);
+    console.log("kennelCosts:", kennelCosts);
+    console.log("totalPets:", totalPets);
+    console.log("recordId:", recordId);
+    console.log("petImage:", petImage);
+  
+    // Calculate Pet Protection Plan cost
+    const petProtectionPlanCost = totalPets * 400;
+    console.log("petProtectionPlanCost:", petProtectionPlanCost);
+
+    // Conditional logic for 'the' in front of toCountry
+    let formattedToCountry = toCountry;
+    if (toCountry === 'United States of America' || toCountry === 'United Kingdom') {
+        formattedToCountry = 'the ' + toCountry;
+    }
+  
+   // Conditional logic for splash image URL
+    const splashImageUrl = petImage || 'https://lh3.googleusercontent.com/d/1DDC8WRhDVAqgFLU2VKt9k1xq18UV4yar=w1000?authuser=0';
+
+    const blocks = [
+        { 
+            id: 'zqXo81HVXqeFEQgZI3yES190XU1WVg', // First block (header)
+            substitutions: {
+                all_pet_names: allPets,
+                to_country: formattedToCountry
+            }
+        },
+        { id: 'MU4dg7VouyBCqzxZT9sggEJNevoxzg' },  // STW Difference
+        { 
+            id: 'Qe7Uku7K8diB09F6FClp5dsvCDHngQ',  // Pet picture splash
+            splashSettings: {
+                imageUrl: splashImageUrl
+            }
+        },
+        { id: 'zKcMh6lv3W6YUGL8sNbEUPRCqKKebg' },  // Shopping smarter
+        {
+            id: '3izED51UeVZ8EIb85yLNIxGP7HRUmg',  // UK pricing
+            substitutions: {
+                all_pet_names: allPets,
+                airline_quoted_qwilr_note: airlineQuoted,
+                all_kennel_sizes: kennels
+            },
+            quoteSections: [
+                {
+                    displayMode: 'plans',
+                    lineItems: [
+                        {
+                            type: 'fixedCost',
+                            description: '💸 Economy\n👉 Comprehensive yet affordable.',
+                            unitPrice: economyPrice,
+                            quantity: 1,
+                            recommended: false,
+                            optional: true,
+                            featuresList: [
+                                // Fill in Economy features
+                                'A Pet Travel Coordinator to manage your move & communicate with you throughout the process.',
+                                'Access to Starwood\'s Pet Travel Knowledge Base, where you will have instant, 24/7 answers to your most pressing pet travel questions.',
+                                'Access to our Pet Travel Portal, customized for your pet\'s move, where you can go to easily submit documents & information to us and to see the status of your pet\'s booking.',
+                                'Our Operations Team to work directly with the airline to request your pet\'s flight.',
+                                `${originService}.`,
+                                'Crate labeling, pet comfort break, and all final preparations.',
+                                'Check-in services at the airport.',
+                                `${flights}.`,
+                                'Customs clearance & import at the Animal Reception Centre (ARC).\n\nYou would be responsible for pick up at the ARC after clearance & import are completed. Price is the total for all pets traveling together.'
+                            ]
+                        },
+                        {
+                            type: 'fixedCost',
+                            description: '🚀 Business\n👉 A little extra to make things a little easier + delivery.',
+                            unitPrice: businessPrice,
+                            quantity: 1,
+                            recommended: true,
+                            optional: true,
+                            featuresList: [
+                                // Fill in Business features
+                                'Business includes all services in Economy...',
+                                'plus 🏷️ an industry-first tracking label with automatic SMS & email updates provided at various transition points along your pet\'s trip.',
+                                'plus 🛡️ A CareTag, adding extra peace of mind as your pet acclimates to their new home and keeping your pet\'s life organized and accessible.',
+                                'plus 🟫 Starwood\'s Kennel Sizing Kit, ensuring easy measurement of your pet and accurate determination of kennel size.',
+                                'plus 🖥️ Our Vet & Docs Team to liaise directly with your pet\'s vet clinic to request records & instruct the vet to ensure that all documents are correct.',
+                                'plus 📄 Our Vet & Docs Team pre-filling the required health certificate & sending it to your vet for your pet\'s final vet appointment.',
+                                'plus 📋 Our Vet & Docs Team providing final appointment instructions to your vet.',
+                                'plus ☎️ Access for your vet to our Vet Hotline where they can quickly get in touch with our Vet & Docs Team with any questions or issues at the time of the final appointment.',
+                                'plus 🏢 Collection from the ARC after clearance & import.',
+                                `plus 🚙 Delivery to your residence in ${deliveryCity}.\n\nPrice is the total for all pets traveling together.`
+                            ]
+                        },
+                        {
+                            type: 'fixedCost',
+                            description: '👑 Premium\n👉 Sit back & let us do it all.',
+                            unitPrice: premiumPrice,
+                            quantity: 1,
+                            recommended: false,
+                            optional: true,
+                            featuresList: [
+                                // Fill in Premium features
+                                'Premium includes all services in Business...',
+                                'plus 🏥 Transport to one of our trusted USDA-accredited vet clinics, that are highly-experienced with travel documents & the USDA endorsement process.',
+                                'plus 🩺 All vet fees for final vet check & health certificate completion.',
+                                'plus 💊 Administration of a tapeworm treatment (required for dogs).',
+                                'plus 🔗 Electronic upload of your pet\'s health certificate to the USDA for their endorsement.',
+                                'plus 💲 All USDA endorsement fees.',
+                                'plus ✉️ All FedEx fees for getting the final health certificate back from the USDA.',
+                                'plus 🖥️ Our Vet & Docs Team tracking the status of the endorsement with the USDA.',
+                                'plus 👋 One change fee waived, if you need to change the itinerary after we\'ve already requested the flight from the airline.\n\nPrice is the total for all pets traveling together.'
+                              
+                            ]
+                        }
+                    ],
+                    settings: {
+                        showQuantity: false,
+                        selectionRequired: true
+                    }
+                },
+                {
+                    displayMode: 'table',
+                    description: 'Recommended Add-ons 🐕 🐈',
+                    lineItems: [
+                        {
+                            type: 'fixedCost',
+                            description: 'Starwood\'s Complete Care Kennel Package, which includes...\n\n✔️ Airline-approved travel kennels for each of your pets \n✔️ Ultra-absorbent, ultra-comfortable bedding for each kennel \n✔️ Two water bowls for each kennel \n✔️ Kennel acclimation guide to ensure your pet is ready & comfortable to fly \n\n👉 Did you know that non-compliant travel kennels are the number one reason pets are rejected at check-in? Getting a kennel through us (with the accurate measurements that you provide) ensures your pet will travel without worry (and no risk of change fees)!',
+                            unitPrice: kennelCosts,
+                            quantity: 1,
+                            optional: true,
+                        },
+                        {
+                            type: 'fixedCost',
+                            description: 'Starwood\'s industry-leading Pet Protection Plan enrollment & coverage. \n\n👉 Many things outside of our or your control can delay a move (see FAQs below). With Starwood\'s Pet Protection Plan you\'ll be covered for things like emergency vet expenses, repatriation, and trip interruption. Plus it provides extra cancelation protection. \n\n💲💲💲 Add the Pet Protection Plan today to lock in your best rate—if you have it added at the time of checkout, you SAVE 50% compared to adding it later. 🙌 \n\nPrice is total for all pets.',
+                            unitPrice: petProtectionPlanCost,
+                            quantity: 1,
+                            optional: true,
+                            lineItemDiscount: {
+                                type: "percentage",
+                                amount: 50
+                              }
+                        }
+                    ],
+                    settings: {
+                        showQuantity: false,
+                        selected: true,
+                        electionRequired: true
+                    }
+                }
+            ],
+            quoteSettings: {
+                selectionType: "single"
+            }
+        },
+        { id: 'tllmv0PODRD-Hh2pGmc-cRux5MQUhQ' },  // UK FAQ
+        { id: 'UyWl2WcWefRrLbBJlZQmv6occW6ZzQ' },  // Affirm
+        { id: 'AsPakPlJje_LXA1l5kiuL_-4xCKVEw' }   // Default accept
+    ];
+
+    try {
+        const response = await axios.post(qwilrEndpoint, {
+            blocks: blocks,
+            name: recordId,
+            published: true,
+            substitutions: {},
+            metadata: {},
+            tags: []
+        }, {
+            headers: {
+                'Authorization': `Bearer ${qwilrApiKey}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        const newPage = response.data;
+
+        console.log('Qwilr API response:', newPage);
+
+        callback({
+            outputFields: {
+                public_qwilr_url: newPage.links.publicUrl,
+                edit_qwilr_url: newPage.links.editorUrl
+            }
+        });
+    } catch (error) {
+        console.error('Error creating Qwilr page:', error.response ? error.response.data : error.message);
+
+        callback({
+            outputFields: {
+                public_qwilr_url: 'Error: ' + (error.response ? error.response.data.message : error.message),
+                edit_qwilr_url: ''
+            }
+        });
+    }
+};
